@@ -26,6 +26,17 @@ scrolling_speed = 3
 pipe_gap = screen_height * 0.25
 pipe_frequency = 3000
 last_pipe = pygame.time.get_ticks() - pipe_frequency
+font_name = pygame.font.match_font('arail')
+WHITE = (255, 255, 255)
+passage_through_pipe = False
+
+# Функция для счётчика
+def score(surf, text, size, x, y):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 
 
 # Класс с птичкой
@@ -101,6 +112,10 @@ bird_group.add(player)
 pipe_group = pygame.sprite.Group()
 
 run = True
+
+# Счёт
+score_pl = 0
+
 while run:
     # Прорисовка фона
     if game_over == False:
@@ -143,7 +158,16 @@ while run:
             last_pipe = time_now
 
         pipe_group.update()
-
+    # Счёт
+    if game_over == False and game == True:
+        if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left \
+                and bird_group.sprites()[0].rect.right < pipe_group.sprites()[0].rect.right \
+                and pass_pipe == False:
+            pass_pipe = True
+        if pass_pipe == True:
+            if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
+                score_pl += 1
+                pass_pipe = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -153,6 +177,9 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN and game == False and game_over == False:
             game = True
 
+
+
+    score(screen, str(score_pl), 50, screen_width / 2, 10)
     pygame.display.update()
     clock.tick(FPS)
 
