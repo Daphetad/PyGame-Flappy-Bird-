@@ -7,6 +7,8 @@ import sqlite3
 
 pygame.init()
 
+USERNAME = None
+
 
 def main():
     clock = pygame.time.Clock()
@@ -39,10 +41,17 @@ def main():
     # Подключение бд
     db = sqlite3.connect('Flap.db')
     cur = db.cursor()
-    USERNAME = None
 
     # Функция для счётчика
     def score(surf, text, size, x, y):
+        font = pygame.font.Font(font_name, size)
+        text_surface = font.render(text, True, WHITE)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        surf.blit(text_surface, text_rect)
+
+    # Лучший счёт
+    def best_score(surf, text, size, x, y):
         font = pygame.font.Font(font_name, size)
         text_surface = font.render(text, True, WHITE)
         text_rect = text_surface.get_rect()
@@ -181,9 +190,21 @@ def main():
             clock.tick(FPS)
 
     name_edit()
-
+    detect = db.execute("SELECT * FROM main WHERE name=?",
+                        (USERNAME,)).fetchall()
+    if detect:
+        best = db.execute("SELECT * FROM main WHERE name=?",
+                          (USERNAME,)).fetchall()[0][2]
+    else:
+        best = 0
+        db.execute(f"""INSERT INTO main
+                                  (name, score)
+                                  VALUES
+                                  ('{USERNAME}', '{best}');""")
+        db.commit()
     # Основной цикл
     while run:
+
         # Прорисовка фона
         if game_over == False:
             # Прорисовка заднего фона
@@ -211,15 +232,29 @@ def main():
 
         # Проверка прикосновения к трубом
         if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or player.rect.top < 0:
+            if best < score_pl:
+                db.execute(f"""INSERT or REPLACE INTO main
+                                                  (name, score)
+                                                  VALUES
+                                                  ('{USERNAME}', '{score_pl}');""")
+                db.commit()
             game_over = True
 
         # Проверка выхода за пределы поля
         if player.rect.bottom > screen_height * 0.85 or player.rect.bottom < 0:
+            if best < score_pl:
+                db.execute(f"""INSERT or REPLACE INTO main
+                                                (name, score)
+                                                VALUES
+                                                ('{USERNAME}', '{score_pl}');""")
+                db.commit()
             game_over = True
             game = False
 
         if game_over == False and game == True:
+
             # Генирация новых труб
+
             time_now = pygame.time.get_ticks()
             if time_now - last_pipe > pipe_frequency:
                 pipe_height = random.randint(-100, 100)
@@ -230,7 +265,9 @@ def main():
                 last_pipe = time_now
 
             pipe_group.update()
+
         # Счёт
+
         if game_over == False and game == True:
             if game_over == False and game == True:
                 if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left \
@@ -254,8 +291,10 @@ def main():
                 game = True
 
         score(screen, str(score_pl), 50, screen_width / 2, 10)
+        best_score(screen, 'Best score ' + str(best), 50, screen_width / 3, 10)
         pygame.display.update()
         clock.tick(FPS)
+
 
 main()
 pygame.quit()
