@@ -8,7 +8,7 @@ import sqlite3
 pygame.init()
 
 USERNAME = None
-
+Pepega = False
 
 def main():
     clock = pygame.time.Clock()
@@ -183,13 +183,15 @@ def main():
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
-
+            global Pepega
+            Pepega = True
             score(screen, 'Welcome', 50, screen_width / 2, 10)
             screen.blit(text_name, rec_name)
             pygame.display.update()
             clock.tick(FPS)
-
-    name_edit()
+    global Pepega
+    if not Pepega:
+        name_edit()
     detect = db.execute("SELECT * FROM main WHERE name=?",
                         (USERNAME,)).fetchall()
     if detect:
