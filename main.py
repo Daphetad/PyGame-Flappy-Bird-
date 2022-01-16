@@ -1,10 +1,13 @@
+import sys
 import pygame
 import random
 import os
 from pygame import font
-
+import sqlite3
 
 pygame.init()
+
+
 def main():
     clock = pygame.time.Clock()
     FPS = 60
@@ -33,6 +36,10 @@ def main():
     passage_through_pipe = False
     pygame.font.init()
     myfont = font.SysFont('Comic Sans MS', 30)
+    # Подключение бд
+    db = sqlite3.connect('Flap.db')
+    cur = db.cursor()
+    USERNAME = None
 
     # Функция для счётчика
     def score(surf, text, size, x, y):
@@ -41,7 +48,6 @@ def main():
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         surf.blit(text_surface, text_rect)
-
 
     # Класс с птичкой
     class Bird(pygame.sprite.Sprite):
@@ -89,7 +95,6 @@ def main():
 
                 self.image = pygame.transform.rotate(self.images_bird[self.index_image], self.speed_bird * -1.5)
 
-
     # Класс с трубами
     class Pipe(pygame.sprite.Sprite):
         def __init__(self, x, y, position):
@@ -108,7 +113,6 @@ def main():
             if self.rect.right < 0:
                 self.kill()
 
-
     bird_group = pygame.sprite.Group()
     player = Bird(screen_width * 0.1, screen_height // 2)
     bird_group.add(player)
@@ -120,6 +124,65 @@ def main():
     # Счёт
     score_pl = 0
 
+    # Основное меню
+    def name_edit():
+        scrolling_ground = 0
+        text_wel = myfont.render('Welcome', True, WHITE)
+        name = 'User Name'
+        find_name = False
+        while not find_name:
+            screen.blit(bg, (0, 0))
+
+            # Отрисовака труб
+            pipe_group.draw(screen)
+
+            # Прорисовка земли
+            screen.blit(bg_ground, (scrolling_ground, screen_height - screen_height * 0.15))
+            scrolling_ground -= scrolling_speed
+
+            # Прокрутка земли
+            if abs(scrolling_ground) > screen_width * 0.08:
+                scrolling_ground = 0
+
+            # Отрисовка птицы
+            bird_group.draw(screen)
+            bird_group.update()
+
+            text_name = myfont.render(name, True, WHITE)
+            rec_name = text_name.get_rect()
+            rec_name.center = screen.get_rect().center
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.unicode.isalpha():
+                        if name == 'User Name':
+                            name = event.unicode
+                        else:
+                            name += event.unicode
+                    if event.key == pygame.K_BACKSPACE:
+                        name = name[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        if len(name) > 1:
+                            global USERNAME
+                            USERNAME = name
+                            find_name = True
+                            break
+
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+
+            score(screen, 'Welcome', 50, screen_width / 2, 10)
+            screen.blit(text_name, rec_name)
+            pygame.display.update()
+            clock.tick(FPS)
+
+    name_edit()
+
+    # Основной цикл
     while run:
         # Прорисовка фона
         if game_over == False:
@@ -190,10 +253,9 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and game == False and game_over == False:
                 game = True
 
-
-
         score(screen, str(score_pl), 50, screen_width / 2, 10)
         pygame.display.update()
         clock.tick(FPS)
+
 main()
 pygame.quit()
