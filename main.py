@@ -162,12 +162,14 @@ while run:
     if game_over == False and game == True:
         if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left \
                 and bird_group.sprites()[0].rect.right < pipe_group.sprites()[0].rect.right \
-                and pass_pipe == False:
-            pass_pipe = True
-        if pass_pipe == True:
+                and passage_through_pipe == False:
+            passage_through_pipe = True
+        if passage_through_pipe == True:
             if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
                 score_pl += 1
-                pass_pipe = False
+                passage_through_pipe = False
+
+    # Проверка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
