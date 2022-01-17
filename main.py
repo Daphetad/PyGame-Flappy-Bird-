@@ -88,6 +88,8 @@ def main():
                 if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                     self.clicked = True
                     self.speed_bird -= screen_height * 0.015
+                    pygame.mixer.music.load('assets/sounds/wing.wav')
+                    pygame.mixer.music.play(0)
                 if pygame.mouse.get_pressed()[0] == 0:
                     self.clicked = False
 
@@ -279,6 +281,8 @@ def main():
                     if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
                         score_pl += 1
                         passage_through_pipe = False
+                        pygame.mixer.music.load('assets/sounds/point.wav')
+                        pygame.mixer.music.play(0)
 
         # Проверка событий
         for event in pygame.event.get():
