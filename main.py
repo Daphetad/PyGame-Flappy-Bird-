@@ -269,7 +269,6 @@ def main():
             pipe_group.update()
 
         # Счёт
-
         if game_over == False and game == True:
             if game_over == False and game == True:
                 if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left \
@@ -280,6 +279,8 @@ def main():
                     if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
                         score_pl += 1
                         passage_through_pipe = False
+
+        # Проверка событий
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
